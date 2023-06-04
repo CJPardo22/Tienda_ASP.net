@@ -1,0 +1,84 @@
+﻿@model Ventas1.Models.Factura
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Factura</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Cedula" class="control-label">Cliente</label>
+                @Html.DropDownList("Cedula", ViewData["Cedula"] as SelectList, "--Seleccione--", new { @class = "form-control" })
+                @*<select asp-for="Cedula" class ="form-control" asp-items="ViewBag.Cedula"></select>*@
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Producto" class="control-label"></label>
+                @*<select asp-for="Producto" class ="form-control" asp-items="ViewBag.Producto"></select>*@
+                @Html.DropDownList("Producto", ViewData["Producto"] as SelectList, "--Seleccione--", new { @class = "form-control" })
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Cantidad" class="control-label"></label>
+                <input asp-for="Cantidad" class="form-control" />
+                <span asp-validation-for="Cantidad" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Total" class="control-label"></label>
+                <input asp-for="Total" class="form-control" readonly/>
+                <span asp-validation-for="Total" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+            // Capturar el evento de cambio en los campos "Cantidad" y "Producto"
+            $("#Cantidad, #Producto").on("change", function () {
+                calcularTotal();
+            });
+
+            // Función para calcular el total
+            function calcularTotal() {
+                var cantidad = parseInt($("#Cantidad").val()) || 0;
+                var productoId = parseInt($("#Producto").val());
+
+                // Realizar una solicitud AJAX al servidor para obtener el precio del producto
+                $.ajax({
+                    url: "/Facturas/GetPrecioProducto", // Ruta del controlador y acción que obtendrá el precio del producto
+                    type: "GET",
+                    data: { productoId: productoId },
+                    success: function (response) {
+                        var precio = parseFloat(response);
+                        var total = cantidad * precio;
+                        $("#Total").val(total.toFixed(2));
+                    },
+                    error: function () {
+                        alert("Error al obtener el precio del producto.");
+                    }
+                });
+            }
+        });
+    </script>
+
+
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
